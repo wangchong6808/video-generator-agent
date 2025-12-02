@@ -1,0 +1,10 @@
+[project]
+name = "video-generator-agent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "veadk-python>=0.2.27",
+    "volcengine-python-sdk[ark]>=4.0.36",
+]
