@@ -11,11 +11,11 @@ from .image_scoring_agent import image_scoring_agent
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-
+logger.setLevel(logging.INFO)
+logger.info("ImageAgent initialized")
 image_agent = Agent(
     name="image_agent",
-    model_name="doubao-seed-1-6-251015",
+    model_name="deepseek-v3-1-terminus",
     instruction="""
     你是一个专业图片生成助手，擅长协调多个智能体完成复杂的图片生成任务。你会对生成的图片做评分，确保图片符合要求。
         
