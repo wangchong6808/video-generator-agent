@@ -1,55 +1,66 @@
 from veadk import Agent, Runner
 from veadk.memory.short_term_memory import ShortTermMemory
-import asyncio
+import os
 import logging
 
 # 导入各个智能体
-from .prompt_agent import prompt_agent
-from .image_generator_agent import image_generator_agent
-from .image_checker_agent import image_checker_agent
-from .image_scoring_agent import image_scoring_agent
+from agent_base.responses_agent import ResponsesAgent
+from agent_base.tool_registry import ToolRegistry
+import tool_definitions
+from prompt_optimizer import PromptOptimizer
+from image_generator import ImageGeneratorTool
+from image_scoring import ImageScoringTool
+from volcenginesdkarkruntime import Ark
+from loguru import logger
+import sys
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-logger.info("ImageAgent initialized")
-image_agent = Agent(
-    name="image_agent",
-    model_name="deepseek-v3-1-terminus",
-    instruction="""
-    你是一个专业图片生成助手，擅长协调多个智能体完成复杂的图片生成任务。你会对生成的图片做评分，确保图片符合要求。
+logger.remove()
+logger.add(sink=sys.stdout, colorize=True, format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | <blue>{module}:{line}</blue> - {message}", level="DEBUG")
+
+def main():
+    logger.info("调用编排智能体处理用户需求...")
+    api_key = os.getenv("ARK_API_KEY")
+    if not api_key:
+        raise ValueError("ARK_API_KEY must be provided either as parameter or environment variable")
         
-    工作流程：
-    1. 接收用户的图片生成需求
-    2. 调用prompt_agent优化图片生成提示词
-    3. 调用image_generator_agent根据提示词生成图片，获取图片URL
-    4. 调用image_scoring_agent为生成的图片打分, 以markdown格式返回评分和图片URL
-
-    返回结果格式：
-    {
-        "image_url": "https://example.com/generated_image.jpg",
-        "score": "0.8"
-    }
-    """,
-    description="根据生图需求生成高质量图片，并返回生成的图片URL和评分",
-    sub_agents=[prompt_agent, image_generator_agent, image_scoring_agent]
-)
-
-# root_agent = orchestrator_agent
-
-runner = Runner(
-    agent=image_agent,
-    short_term_memory=ShortTermMemory()
-)
-
-async def main():
-    print("\n调用编排智能体处理用户需求...")
-    response = await runner.run(
-        messages="生成两只兔子在草地上玩耍的图片，分辨率为1024x1024", session_id="session_id123"
+    client = Ark(
+        base_url='https://ark.cn-beijing.volces.com/api/v3',
+        api_key=api_key
     )
-    print(f"编排智能体结果：{response}")
+    prompt_optimizer = PromptOptimizer(client)
+    image_generator = ImageGeneratorTool(client)
+    image_scoring = ImageScoringTool(client)
+    
+    tool_registry = ToolRegistry()
+    tool_registry.register_tool(prompt_optimizer.optimize, tool_definitions.PROMPT_OPTIMIZER_TOOL)
+    tool_registry.register_tool(image_generator.generate, tool_definitions.IMAGE_GENERATOR_TOOL)
+    tool_registry.register_tool(image_scoring.score, tool_definitions.IMAGE_SCORING_TOOL)
+    image_agent = ResponsesAgent(
+        name="image_agent",
+        model_name="doubao-seed-1-6-251015",
+        instruction="""
+        你是一个专业图片生成助手，擅长协调多个智能体完成复杂的图片生成任务。你会对生成的图片做评分，确保图片符合要求。
+            
+        工作流程：
+        1. 接收用户的图片生成需求
+        2. 调用prompt_agent优化图片生成提示词
+        3. 调用image_generator_agent根据提示词生成图片，获取图片URL
+        4. 调用image_scoring_agent为生成的图片打分, 以markdown格式返回评分和图片URL
+        5. 如果图片图片得分低于60分，重复步骤3-4，直到图片得分符合要求
+        6. 如果图片得分符合要求，返回图片URL和评分
+
+        返回结果格式：
+        {
+            "image_url": "https://example.com/generated_image.jpg",
+            "score": "83"
+        }
+        """,
+        description="根据生图需求生成高质量图片，并返回生成的图片URL和评分",
+        tool_registry=tool_registry
+    )
+    image_agent.run("生成一张关于城市交通的图片")
+    
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
+    main()
 

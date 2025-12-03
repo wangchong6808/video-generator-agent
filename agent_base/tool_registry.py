@@ -5,20 +5,16 @@ from volcenginesdkarkruntime import Ark
 class ToolRegistry:
     """工具注册器，用于管理和执行所有可用工具"""
     
-    def __init__(self, client: Ark):
+    def __init__(self):
         """
         初始化工具注册器
-        
-        Args:
-            client: Ark客户端实例
         """
-        self.client = client
         self.tools: Dict[str, Callable] = {}
         self.tool_definitions = []
 
     
     
-    def register_tools(self, tool: Callable, tool_definition: Dict):
+    def register_tool(self, tool: Callable, tool_definition: Dict):
         """
         注册所有工具
         """

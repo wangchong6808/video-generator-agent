@@ -1,17 +1,18 @@
 import os
 from volcenginesdkarkruntime import Ark
 from typing import Dict
-import utils
+import agent_base.utils as utils
 from loguru import logger
-logger.add("sys.stdout", colorize=True, format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}", level="INFO")
+from agent_base.tool_registry import ToolRegistry
+import json
 
 class ResponsesAgent():
-    def __init__(self, name, model_name, instruction, description, tools=[], sub_agents=[]):
+    def __init__(self, name, model_name, instruction, description, tool_registry: ToolRegistry, sub_agents=[]):
         self.name = name
         self.model_name = model_name
         self.instruction = instruction
         self.description = description
-        self.tools = tools
+        self.tool_registry = tool_registry
         self.api_key = os.getenv("ARK_API_KEY")
         if not self.api_key:
             raise ValueError("ARK_API_KEY must be provided either as parameter or environment variable")
@@ -59,7 +60,7 @@ class ResponsesAgent():
         initial_response = self.client.responses.create(
             model=self.model_name,
             input=input_messages,
-            tools=self.tools,
+            tools=self.tool_registry.get_tool_definitions(),
             store=True
         )
 
@@ -85,9 +86,9 @@ class ResponsesAgent():
                 tool_name = parsed_response["function_call"][0].name
                 tool_args = json.loads(parsed_response["function_call"][0].arguments)
                 tool_call_id = parsed_response["function_call"][0].id
-                print(f"calling tool with tool_name: {tool_name}, tool_args: {tool_args}")
+                logger.info(f"calling tool with tool_name: {tool_name}, tool_args: {tool_args}")
                 tool_result = self.tool_registry.call_tool(tool_name, **tool_args)
-                print(f"tool_result: {tool_result}")
+                logger.info(f"tool_result: {tool_result}")
                 input_messages=[
                     {
                         "type": "function_call_output",
@@ -108,7 +109,7 @@ class ResponsesAgent():
                 parsed_response = utils.parse_response(previous_response)
             elif parsed_response["has_message"]:
                 final_response = "".join(parsed_response["message"])
-                print(f"final_response: {final_response}")
+                logger.info(f"final_response: {final_response}")
                 break
             else:
                 logger.error(f"unexpected response, no message or function_call found: {parsed_response}")

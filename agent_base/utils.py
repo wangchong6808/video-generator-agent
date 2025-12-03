@@ -2,7 +2,6 @@
 import os
 from typing import Dict
 from loguru import logger
-logger.add("sys.stdout", colorize=True, format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}", level="INFO")
 
 def get_api_key():
     """获取API密钥"""
