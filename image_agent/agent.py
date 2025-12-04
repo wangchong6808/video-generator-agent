@@ -36,7 +36,7 @@ def generate_image(prompt: str) -> Dict:
     image_scoring = ImageScoringTool(client)
     
     tool_registry = ToolRegistry()
-    tool_registry.register_tool(prompt_optimizer.optimize, tool_definitions.PROMPT_OPTIMIZER_TOOL)
+    # tool_registry.register_tool(prompt_optimizer.optimize, tool_definitions.PROMPT_OPTIMIZER_TOOL)
     tool_registry.register_tool(image_generator.generate, tool_definitions.IMAGE_GENERATOR_TOOL)
     tool_registry.register_tool(image_scoring.score, tool_definitions.IMAGE_SCORING_TOOL)
     image_agent = ResponsesAgent(
