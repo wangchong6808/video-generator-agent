@@ -34,8 +34,26 @@ SCRIPT_SCORING_TOOL: Dict = {
     }
 }
 
+# 关键元素提取工具定义
+SCRIPT_KEY_ELEMENTS_EXTRACTOR_TOOL: Dict = {
+    "type": "function",
+    "name": "script_key_elements_extractor",
+    "description": "从剧本内容中提取关键元素，包括角色、道具和场景",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "script_content": {
+                "type": "string",
+                "description": "剧本内容，用于提取关键元素"
+            }
+        },
+        "required": ["script_content"]
+    }
+}
+
 # 所有工具列表
 ALL_TOOLS: List[Dict] = [
     SCRIPT_GENERATOR_TOOL,
-    SCRIPT_SCORING_TOOL
+    SCRIPT_SCORING_TOOL,
+    SCRIPT_KEY_ELEMENTS_EXTRACTOR_TOOL
 ]

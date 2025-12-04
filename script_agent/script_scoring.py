@@ -68,7 +68,7 @@ class ScriptScoringTool:
 
         parsed_response = parse_response(response)
         response_message = "".join(parsed_response["message"])
-        logger.info(f"剧本评分结果: {response_message}")
+        # logger.info(f"剧本评分结果: {response_message}")
 
         try:
             return json.loads(response_message)
