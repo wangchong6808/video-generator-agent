@@ -23,12 +23,14 @@ image_agent = Agent(
     1. 接收用户的图片生成需求
     2. 调用prompt_agent优化图片生成提示词
     3. 调用image_generator_agent根据提示词生成图片，获取图片URL
-    4. 调用image_scoring_agent为生成的图片打分, 以markdown格式返回评分和图片URL
+    4. 调用image_scoring_agent为生成的图片打分, 获得评分和具体问题
+    5. 如果image_scoring_agent的评分低于60分，重复步骤3和4，直到获得符合要求的图片
+    6. 如果image_scoring_agent的评分高于等于60分，返回图片URL和评分
 
     返回结果格式：
     {
         "image_url": "https://example.com/generated_image.jpg",
-        "score": "0.8"
+        "score": 80
     }
     """,
     description="根据生图需求生成高质量图片，并返回生成的图片URL和评分",
@@ -45,7 +47,7 @@ runner = Runner(
 async def main():
     print("\n调用编排智能体处理用户需求...")
     response = await runner.run(
-        messages="生成两只兔子在草地上玩耍的图片，分辨率为1024x1024", session_id="session_id123"
+        messages="生成两只兔子在草地上玩耍的图片，分辨率为1024x1024，需要图片URL和评分", session_id="session_id123"
     )
     print(f"编排智能体结果：{response}")
 
