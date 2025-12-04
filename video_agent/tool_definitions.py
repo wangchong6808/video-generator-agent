@@ -26,7 +26,7 @@ VIDEO_PROMPT_OPTIMIZER_TOOL: Dict = {
 VIDEO_GENERATOR_TOOL: Dict = {
     "type": "function",
     "name": "video_generator",
-    "description": "根据提示词生成视频",
+    "description": "根据提示词或首帧参考图生成视频",
     "parameters": {
         "type": "object",
         "properties": {
@@ -43,6 +43,11 @@ VIDEO_GENERATOR_TOOL: Dict = {
                 "type": "string",
                 "description": "视频分辨率，默认720P",
                 "default": "720P"
+            },
+            "image_url": {
+                "type": "string",
+                "description": "首帧参考图URL，可选，用于首帧参考图生视频",
+                "default": ""
             }
         },
         "required": ["prompt"]

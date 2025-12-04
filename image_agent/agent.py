@@ -6,18 +6,22 @@ import logging
 # 导入各个智能体
 from agent_base.responses_agent import ResponsesAgent
 from agent_base.tool_registry import ToolRegistry
-import tool_definitions
-from prompt_optimizer import PromptOptimizer
-from image_generator import ImageGeneratorTool
-from image_scoring import ImageScoringTool
+import image_agent.tool_definitions as tool_definitions
+from .prompt_optimizer import PromptOptimizer
+from .image_generator import ImageGeneratorTool
+from .image_scoring import ImageScoringTool
 from volcenginesdkarkruntime import Ark
 from loguru import logger
 import sys
 
 logger.remove()
-logger.add(sink=sys.stdout, colorize=True, format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | <blue>{module}:{line}</blue> - {message}", level="DEBUG")
+logger.add(sink=sys.stdout, colorize=True, format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | <blue>{module}:{line}</blue> - {message}", level="INFO")
 
-def main():
+
+
+from typing import Dict
+
+def generate_image(prompt: str) -> Dict:
     logger.info("调用编排智能体处理用户需求...")
     api_key = os.getenv("ARK_API_KEY")
     if not api_key:
@@ -58,9 +62,10 @@ def main():
         description="根据生图需求生成高质量图片，并返回生成的图片URL和评分",
         tool_registry=tool_registry
     )
-    image_agent.run("生成一张关于城市交通的图片")
-    
+    result = image_agent.run(prompt)
+    logger.info(f"生成图片结果: {result}")
+    return result
 
 if __name__ == "__main__":
-    main()
+    generate_image("生成一张关于城市交通的图片")
 

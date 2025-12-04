@@ -16,14 +16,15 @@ class VideoGeneratorTool:
         self.client = client
         self.model = "doubao-seedance-1-0-pro-250528"  # 使用火山引擎推荐的视频生成模型
     
-    def generate(self, prompt: str, duration: int = 5, resolution: str = "720P") -> str:
+    def generate(self, prompt: str, duration: int = 5, resolution: str = "720P", image_url: Optional[str] = None) -> str:
         """
-        根据提示词生成视频
+        根据提示词或首帧参考图生成视频
         
         Args:
             prompt: 视频生成提示词
             duration: 视频时长（秒），默认5秒
             resolution: 视频分辨率，默认720P
+            image_url: 首帧参考图URL，可选，用于首帧参考图生视频
             
         Returns:
             生成的视频URL
@@ -31,16 +32,33 @@ class VideoGeneratorTool:
         # 添加视频生成参数到提示词中
         prompt_with_params = f"{prompt} --duration {duration} --resolution {resolution}"
         
-        # 创建视频生成任务
-        create_result = self.client.content_generation.tasks.create(
-            model=self.model,
-            content=[
-                {
-                    "type": "text",
-                    "text": prompt_with_params
-                }
-            ]
-        )
+        # 根据是否提供了首帧参考图，构建不同的content参数
+        if image_url:
+            # 首帧参考图生视频
+            create_result = self.client.content_generation.tasks.create(
+                model=self.model,
+                content=[
+                    {
+                        "type": "text",
+                        "text": prompt_with_params
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": image_url}
+                    }
+                ]
+            )
+        else:
+            # 文生视频
+            create_result = self.client.content_generation.tasks.create(
+                model=self.model,
+                content=[
+                    {
+                        "type": "text",
+                        "text": prompt_with_params
+                    }
+                ]
+            )
         
         # 获取任务ID
         task_id = create_result.id
