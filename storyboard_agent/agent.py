@@ -7,6 +7,7 @@ from volcenginesdkarkruntime import Ark
 from loguru import logger
 import sys
 import os
+import json
 from typing import Dict
 
 logger.remove()
@@ -34,8 +35,8 @@ if api_key:
         你是一个专业的分镜生成助手，擅长将剧本内容分解为多个合适的分镜。
             
         工作流程：
-        1. 接收用户提供的剧本内容
-        2. 调用storyboard_generator工具，根据剧本内容生成多个分镜，每个分镜对应5秒视频
+        1. 接收用户提供的剧本内容和关键元素
+        2. 调用storyboard_generator工具，根据剧本内容和关键元素生成多个分镜，每个分镜对应5秒视频，包含相关的关键元素
         3. 调用storyboard_scoring工具，为生成的分镜打分
         4. 返回分镜列表和评分结果
 
@@ -47,24 +48,28 @@ if api_key:
                     "镜头类型": "全景",
                     "首帧图片提示词": "提示词内容",
                     "视频生成提示词": "提示词内容",
-                    "时长": 5
+                    "时长": 5,
+                    "相关角色": ["角色1", "角色2"],
+                    "相关道具": ["道具1", "道具2"],
+                    "相关场景": ["场景1"]
                 }
             ],
             "score": "83",
             "feedback": "分镜质量评估反馈"
         }
         """,
-        description="根据剧本内容生成多个分镜，每个分镜对应5秒视频，并对生成的分镜进行评分",
+        description="根据剧本内容和关键元素生成多个分镜，每个分镜对应5秒视频，并对生成的分镜进行评分",
         tool_registry=tool_registry
     )
 
 
-def generate_storyboard(script_content: str) -> Dict:
+def generate_storyboard(script_content: str, key_elements: Dict = None) -> Dict:
     """
-    根据剧本内容生成分镜并评分
+    根据剧本内容和关键元素生成分镜并评分
     
     Args:
         script_content: 剧本内容
+        key_elements: 关键元素，包含角色、道具和场景，可选
         
     Returns:
         包含生成的分镜列表、评分和反馈的字典
@@ -92,8 +97,8 @@ def generate_storyboard(script_content: str) -> Dict:
         你是一个专业的分镜生成助手，擅长将剧本内容分解为多个合适的分镜。
             
         工作流程：
-        1. 接收用户提供的剧本内容
-        2. 调用storyboard_generator工具，根据剧本内容生成多个分镜，每个分镜对应5秒视频
+        1. 接收用户提供的剧本内容和关键元素
+        2. 调用storyboard_generator工具，根据剧本内容和关键元素生成多个分镜，每个分镜对应5秒视频，包含相关的关键元素
         3. 调用storyboard_scoring工具，为生成的分镜打分
         4. 返回分镜列表和评分结果
 
@@ -105,18 +110,28 @@ def generate_storyboard(script_content: str) -> Dict:
                     "镜头类型": "全景",
                     "首帧图片提示词": "提示词内容",
                     "视频生成提示词": "提示词内容",
-                    "时长": 5
+                    "时长": 5,
+                    "相关角色": ["角色1", "角色2"],
+                    "相关道具": ["道具1", "道具2"],
+                    "相关场景": ["场景1"]
                 }
             ],
             "score": "83",
             "feedback": "分镜质量评估反馈"
         }
         """,
-        description="根据剧本内容生成多个分镜，每个分镜对应5秒视频，并对生成的分镜进行评分",
+        description="根据剧本内容和关键元素生成多个分镜，每个分镜对应5秒视频，并对生成的分镜进行评分",
         tool_registry=tool_registry
     )
     
-    result = storyboard_agent.run(script_content)
+    # 构建用户输入，包含剧本内容和关键元素
+    if key_elements:
+        user_input = f"剧本内容：\n{script_content}\n\n关键元素：\n{json.dumps(key_elements, ensure_ascii=False, indent=2)}"
+    else:
+        user_input = script_content
+    
+    result = storyboard_agent.run(user_input)
+    
     logger.info(f"分镜生成结果: {result}")
     return result
 
@@ -187,5 +202,77 @@ if __name__ == "__main__":
     【挂钟的滴答声再次清晰，李华的目光牢牢锁定在信纸上，一动不动。】
     """
     
-    # 调用分镜生成函数
-    generate_storyboard(sample_script)
+    # 示例关键元素
+    sample_key_elements = {
+        "角色": [
+            {
+                "名称": "李华",
+                "年龄": 30,
+                "性别": "男",
+                "体型": "中等身材",
+                "眼睛颜色": "黑色",
+                "发饰": "黑色短发",
+                "衣着": "灰色休闲装",
+                "鞋履": "白色运动鞋",
+                "关键词": "主角、收到父亲的信、情绪变化"
+            },
+            {
+                "名称": "王强",
+                "年龄": 45,
+                "性别": "男",
+                "体型": "中等身材，略微发福",
+                "眼睛颜色": "黑色",
+                "发饰": "黑色短发，略带白发",
+                "衣着": "深色夹克，黑色裤子",
+                "鞋履": "黑色皮鞋",
+                "关键词": "父亲的朋友、送信人、温和"
+            }
+        ],
+        "道具": [
+            {
+                "名称": "信纸",
+                "类别": "文书",
+                "形状": "长方形，有折痕",
+                "关键词": "父亲的信、重要线索"
+            },
+            {
+                "名称": "挂钟",
+                "类别": "家具",
+                "形状": "圆形，老式",
+                "关键词": "客厅装饰、时间流逝"
+            },
+            {
+                "名称": "黑色双肩包",
+                "类别": "箱包",
+                "形状": "长方形，黑色",
+                "关键词": "王强携带、装着信封"
+            },
+            {
+                "名称": "牛皮纸信封",
+                "类别": "文书",
+                "形状": "长方形，牛皮纸色",
+                "关键词": "父亲的信、王强带来"
+            },
+            {
+                "名称": "名片",
+                "类别": "文书",
+                "形状": "长方形，白色",
+                "关键词": "王强的联系方式"
+            }
+        ],
+        "场景": [
+            {
+                "名称": "客厅",
+                "类别": "室内场景",
+                "关键词": "光线柔和、陈设简朴、挂钟滴答作响"
+            },
+            {
+                "名称": "门口",
+                "类别": "室内场景",
+                "关键词": "木门、王强站在门外"
+            }
+        ]
+    }
+    
+    # 调用分镜生成函数，传递剧本内容和关键元素
+    generate_storyboard(sample_script, sample_key_elements)

@@ -4,16 +4,34 @@ from typing import Dict, List
 STORYBOARD_GENERATOR_TOOL: Dict = {
     "type": "function",
     "name": "storyboard_generator",
-    "description": "根据剧本内容生成多个分镜，每个分镜包含用于生成首帧图片的提示词和生成视频的提示词",
+    "description": "根据剧本内容和关键元素生成多个分镜，每个分镜包含用于生成首帧图片的提示词、生成视频的提示词以及相关的关键元素",
     "parameters": {
         "type": "object",
         "properties": {
             "script_content": {
                 "type": "string",
                 "description": "剧本内容，用于生成分镜"
+            },
+            "key_elements": {
+                "type": "object",
+                "description": "关键元素，包含角色、道具和场景",
+                "properties": {
+                    "角色": {
+                        "type": "array",
+                        "description": "角色列表"
+                    },
+                    "道具": {
+                        "type": "array",
+                        "description": "道具列表"
+                    },
+                    "场景": {
+                        "type": "array",
+                        "description": "场景列表"
+                    }
+                }
             }
         },
-        "required": ["script_content"]
+        "required": ["script_content", "key_elements"]
     }
 }
 

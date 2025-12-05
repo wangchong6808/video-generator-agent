@@ -18,20 +18,21 @@ class StoryboardGeneratorTool:
         self.client = client
         self.model = "doubao-seed-1-6-251015"
     
-    def generate(self, script_content: str) -> Dict:
+    def generate(self, script_content: str, key_elements: Dict) -> Dict:
         """
-        根据剧本内容生成多个分镜，每个分镜包含用于生成首帧图片的提示词和生成视频的提示词
+        根据剧本内容和关键元素生成多个分镜，每个分镜包含用于生成首帧图片的提示词、生成视频的提示词以及相关的关键元素
         
         Args:
             script_content: 剧本内容
+            key_elements: 关键元素，包含角色、道具和场景
             
         Returns:
-            包含生成的分镜列表的字典
+            包含生成的分镜列表的字典，每个分镜包含相关的关键元素
         """
         storyboard_prompt_template = """
 你是一个专业的分镜设计师，擅长将剧本内容分解为多个合适的分镜，上限不会超过5个分镜。
 
-请根据以下剧本内容生成多个分镜，要求：
+请根据以下剧本内容和关键元素生成多个分镜，要求：
 1. 自动判断合适的分镜数量，每个分镜对应5秒视频
 2. 每个分镜包含：
    - 分镜编号
@@ -39,6 +40,9 @@ class StoryboardGeneratorTool:
    - 首帧图片提示词：用于生成该分镜的首帧图片
    - 视频生成提示词：用于生成该分镜的5秒视频
    - 时长：固定为5秒
+   - 相关角色：从提供的关键元素中选择与该分镜相关的角色名称列表
+   - 相关道具：从提供的关键元素中选择与该分镜相关的道具名称列表
+   - 相关场景：从提供的关键元素中选择与该分镜相关的场景名称列表
 3. 生成详细、精确的图片生成提示词，包含以下要素：
     - 主体内容
     - 场景描述
@@ -58,6 +62,9 @@ class StoryboardGeneratorTool:
 剧本内容：
 {script_content}
 
+关键元素：
+{key_elements}
+
 请使用以下JSON格式返回分镜结果：
 {{
     "storyboards": [
@@ -66,20 +73,26 @@ class StoryboardGeneratorTool:
             "镜头类型": "全景",
             "首帧图片提示词": "提示词内容",
             "视频生成提示词": "提示词内容",
-            "时长": 5
+            "时长": 5,
+            "相关角色": ["角色1", "角色2"],
+            "相关道具": ["道具1", "道具2"],
+            "相关场景": ["场景1"]
         }},
         {{
             "分镜编号": "2",
             "镜头类型": "中景",
             "首帧图片提示词": "提示词内容",
             "视频生成提示词": "提示词内容",
-            "时长": 5
+            "时长": 5,
+            "相关角色": ["角色1"],
+            "相关道具": [],
+            "相关场景": ["场景1"]
         }}
     ]
 }}
         """
         
-        prompt = storyboard_prompt_template.format(script_content=script_content)
+        prompt = storyboard_prompt_template.format(script_content=script_content, key_elements=json.dumps(key_elements, ensure_ascii=False))
         
         response = self.client.responses.create(
             model=self.model,
