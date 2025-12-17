@@ -75,8 +75,7 @@ class ResponsesAgent():
             # 检查是否有推理结果, 拼接parsed_response["reasoning"]中的所有内容
             if parsed_response["reasoning"]:
                 reasoning = "".join(parsed_response["reasoning"])
-                # print(f"reasoning: {reasoning}")
-                # break
+                logger.debug(f"reasoning: {reasoning}")
 
             # 检查是否有最终消息, 拼接parsed_response["message"]中的所有内容
             

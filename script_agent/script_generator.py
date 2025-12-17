@@ -68,7 +68,7 @@ class ScriptGeneratorTool:
         parsed_response = parse_response(response)
         script_content = "".join(parsed_response["message"])
         
-        logger.info(f"生成的剧本内容: {script_content}")
+        logger.debug(f"生成的剧本内容: {script_content}")
         
         return {
             "script_content": script_content
